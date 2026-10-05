@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hissə Radar</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070c24;--bg2:#0d1638;--ink:#eaf2ff;--mute:#9db0d6;--or:#ff8a1f;--cy:#2fd3ff;--line:#22336b;--up:#3be08a;--dn:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;line-height:1.5;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+h1,h2{font-family:"Baloo 2",Nunito,sans-serif;margin:0;line-height:1.1}
+.wrap{max-width:980px;margin:0 auto;padding:20px}
+header{display:flex;flex-wrap:wrap;align-items:end;gap:12px;justify-content:space-between;margin-bottom:18px}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;color:var(--or)}
+.sub{color:var(--mute);margin:4px 0 0}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:700 .95rem Nunito,sans-serif;border:0;border-radius:999px;padding:10px 18px;cursor:pointer;background:var(--or);color:#1a0d00}
+button.g{background:transparent;color:var(--ink);border:2px solid var(--cy)}
+button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
+details{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:16px}
+summary{cursor:pointer;font:700 1.1rem "Baloo 2"}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:12px}
+label{display:block;font-weight:700;font-size:.9rem;margin-bottom:4px}
+input,select{width:100%;font:700 1rem Nunito;padding:9px 11px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.hint{color:var(--mute);font-size:.85rem;margin:10px 0 0}
+.hint a{color:var(--cy)}
+.bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;color:var(--mute);font-size:.9rem}
+.bar select{width:auto}
+.box{background:var(--bg2);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:700;font-size:.88rem}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
+.sym{font:800 1.15rem "Baloo 2"}
+.nm{color:var(--mute);font-size:.82rem;display:block;max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up{color:var(--up);font-weight:700}.dn{color:var(--dn);font-weight:700}
+.new{background:var(--cy);color:#04202b;font-size:.72rem;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:6px}
+.meter{height:8px;width:110px;background:var(--line);border-radius:6px;overflow:hidden;display:inline-block;vertical-align:middle}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--cy),var(--or))}
+.empty{padding:28px;text-align:center;color:var(--mute)}
+tbody tr[data-s]{cursor:pointer}tbody tr[data-s]:hover,tbody tr.sel{background:rgba(47,211,255,.08)}
+h2{font-size:1.5rem;margin:24px 0 10px}
+.star{cursor:pointer;color:var(--or);margin-right:6px;font-size:1.1rem;user-select:none}
+svg.sp{vertical-align:middle}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.tools input[type=search]{max-width:210px}
+.tools label{margin:0;display:flex;gap:6px;align-items:center}
+.item{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;align-items:center}
+.item:last-child{border-bottom:0}
+.item a{color:var(--ink);font-weight:700;text-decoration:none}.item a:hover{color:var(--cy)}
+.meta{color:var(--mute);font-size:.82rem;margin-top:2px}
+.tag{font-size:.75rem;font-weight:800;border-radius:6px;padding:1px 7px;margin-right:6px;background:var(--line);color:var(--ink)}
+.tag.p{background:rgba(59,224,138,.2);color:var(--up)}.tag.m{background:rgba(255,107,107,.2);color:var(--dn)}
+.item button{padding:6px 12px;font-size:.82rem;flex:none}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140px);background:var(--or);color:#1a0d00;font-weight:700;padding:10px 20px;border-radius:999px;transition:transform .25s;max-width:90vw;text-align:center}
+#toast.on{transform:translate(-50%,0)}
+footer{color:var(--mute);font-size:.82rem;margin-top:16px}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Hissə Radar</h1>
+    <p class="sub">Ən güclü yüksəlişdə olan hissələr və Telegram xəbərdarlığı</p>
+  </div>
+  <div class="btns">
+    <button id="refresh">Yenilə</button>
+    <button id="auto" class="g">Avto: aktiv</button>
+    <button id="sendTop" class="g">Top 5-i Telegrama göndər</button>
+  </div>
+</header>
+
+<details id="settings" open>
+  <summary>Ayarlar</summary>
+  <div class="form">
+    <div><label for="src">Məlumat mənbəyi</label>
+      <select id="src">
+        <option value="both">Finnhub + Alpha Vantage (tövsiyə)</option>
+        <option value="av">Alpha Vantage</option>
+        <option value="fmp">Financial Modeling Prep</option>
+      </select></div>
+    <div><label for="fhk">Finnhub API açarı (qiymət + xəbər)</label><input id="fhk" type="password" autocomplete="off"></div>
+    <div><label for="key">API açarı (Alpha Vantage / FMP)</label><input id="key" type="password" autocomplete="off" placeholder="API açarını bura yazın"></div>
+    <div><label for="tg">Telegram bot token</label><input id="tg" type="password" autocomplete="off" placeholder="123456:ABC..."></div>
+    <div><label for="chat">Telegram chat ID</label><input id="chat" placeholder="məs. 123456789"></div>
+    <div><label for="thr">Xəbərdarlıq həddi (% artım, ★ olanlarda yarısı)</label><input id="thr" type="number" min="0.5" step="0.5"></div>
+    <div><label for="sec">Yenilənmə (saniyə)</label><input id="sec" type="number" min="15" step="5"></div>
+    <div><label for="minvr">Xəbərdarlıq üçün minimum həcm × (yalnız FMP, 0 = söndür)</label><input id="minvr" type="number" min="0" step="0.5"></div>
+    <div><label for="minp">Minimum qiymət ($, ucuz səhmləri süzür)</label><input id="minp" type="number" min="0" step="0.5"></div>
+    <div><label><input id="nws" type="checkbox" style="width:auto"> Telegram mesajına xəbər başlığı əlavə et</label>
+      <label><input id="ntf" type="checkbox" style="width:auto"> Brauzer bildirişi göndər</label>
+      <label><input id="clean" type="checkbox" style="width:auto"> ETF / warrant / zibil səhmləri süz</label>
+      <label><input id="mo" type="checkbox" style="width:auto"> Yalnız ABŞ bazarı açıq olanda göndər</label></div>
+  </div>
+  <p class="hint">Telegram: <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a>-dan bot yaradıb token alın, botunuza bir mesaj yazın, chat ID-ni <a href="https://t.me/userinfobot" target="_blank" rel="noopener">@userinfobot</a>-dan öyrənin. Məlumat üçün pulsuz açar: Alpha Vantage və ya Financial Modeling Prep saytlarında qeydiyyatdan keçin. Açarlar yalnız bu brauzerdə saxlanılır.</p>
+  <div class="btns" style="margin-top:12px"><button id="test" class="g">Telegram testi</button></div>
+</details>
+
+<div class="bar">
+  <span><span id="status">Hələ yenilənməyib</span> <span id="mkt"></span></span>
+  <span>Sıralama: <select id="sort"><option value="score">Partlayış balı</option><option value="new">Ən yeni</option><option value="pct">Artım %</option></select></span>
+</div>
+
+<div class="tools">
+  <input id="q" type="search" placeholder="Hissə axtar..." aria-label="Hissə axtar">
+  <label><input id="wonly" type="checkbox" style="width:auto"> Yalnız izlədiklərim ★</label>
+  <button id="csv" class="g">CSV yüklə</button>
+</div>
+<div class="box"><table>
+  <thead><tr><th>Hissə</th><th class="n">Qiymət</th><th class="n">Artım</th><th>Partlayış balı</th><th>Trend</th><th class="n">İlk görünmə</th></tr></thead>
+  <tbody id="rows"><tr><td colspan="6" class="empty">Yüklənir...</td></tr></tbody>
+</table></div>
+
+<h2 id="newsTitle">Xəbərlər</h2>
+<div class="box" id="news"><div class="empty">Xəbərlərə baxmaq üçün cədvəldən hissəni seçin.</div></div>
+<p class="hint">Xəbərlər seçdiyiniz hissə üzrə gəlir. Alpha Vantage pulsuz planında gündəlik sorğu limiti az olduğu üçün xəbərlər 5 dəqiqə yadda saxlanılır.</p>
+<h2>Siqnal tarixçəsi</h2>
+<div class="box" id="sig"><div class="empty">Hələ xəbərdarlıq göndərilməyib.</div></div>
+<p class="hint">Hər xəbərdarlıqdan 1 saat və 1 gün sonra qiymətin nə etdiyi. Dəyər yalnız o vaxt səhifə açıq olduqda qeyd olunur.</p>
+<footer>Partlayış balı sadə hesablamadır: gündəlik artım faizi və (varsa) həcm göstəricisi. Bu maliyyə məsləhəti deyil, qərarları özünüz yoxlayın.
+Avtomatik Telegram mesajları üçün bu səhifə açıq qalmalıdır.</footer>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let cfg=Object.assign({src:"both",fhk:"",key:"",tg:"",chat:"",thr:5,sec:60,auto:true,sort:"score",minp:0,nws:true,ntf:false,watch:[],q:"",wonly:false,clean:true,mo:false,minvr:0},LS.get("hr-cfg",{}));
+if(!["av","fmp","both"].includes(cfg.src)){/* köhnə demo rejimindən qalan saxta məlumatı təmizlə */cfg.src="both";LS.set("hr-cfg",cfg);LS.set("hr-hist",{});LS.set("hr-seen",{});LS.set("hr-sent",{})}
+let hist=LS.get("hr-hist",{}),seen=LS.get("hr-seen",{}),sent=LS.get("hr-sent",{}),rows=[],timer=null,busy=false;
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),3500)}
+function saveCfg(){LS.set("hr-cfg",cfg)}
+
+let avgC=LS.get("hr-avg",{}),sig=LS.get("hr-sig",[]),mOpen=false;
+const junk=r=>/\b(ETF|ETN|Fund|Trust|Warrants?|Rights?|Units?)\b/i.test(r.name||"")||(r.symbol.length>=5&&/[WRU]$/.test(r.symbol))||r.price<1||(r.mcap>0&&r.mcap<5e7);
+/* FMP: real həcm + 20 günlük orta həcmə görə nisbi həcm */
+async function enrich(list){
+  if(cfg.src!=="fmp")return list;
+  const top=[...list].sort((a,b)=>b.pct-a.pct).slice(0,12),day=new Date().toISOString().slice(0,10),k=encodeURIComponent(cfg.key);
+  try{const q=await jget("https://financialmodelingprep.com/stable/batch-quote?symbols="+top.map(x=>x.symbol).join(",")+"&apikey="+k);
+    if(Array.isArray(q))q.forEach(x=>{const r=top.find(t=>t.symbol===x.symbol);if(r){r.vol=+x.volume;r.mcap=+x.marketCap}})}catch(e){}
+  for(const r of top){
+    let c=avgC[r.symbol];
+    if(!c||c.d!==day){try{
+      const h=await jget("https://financialmodelingprep.com/stable/historical-price-eod/light?symbol="+encodeURIComponent(r.symbol)+"&apikey="+k);
+      const a=(Array.isArray(h)?h:(h&&h.historical)||[]).filter(x=>x.date!==day).slice(0,20).map(x=>+x.volume).filter(v=>v>0);
+      c=avgC[r.symbol]={d:day,v:a.length?a.reduce((x,y)=>x+y)/a.length:0};
+    }catch(e){continue}}
+    if(c.v&&r.vol)r.vr=r.vol/c.v;
+  }
+  LS.set("hr-avg",avgC);return list;
+}
+/* Siqnal tarixçəsi: xəbərdarlıqdan 1 saat / 1 gün sonrakı qiymət */
+async function track(){
+  const now=Date.now(),pend=sig.filter(x=>(!x.h&&now-x.t>=36e5)||(!x.d&&now-x.t>=864e5));
+  if(pend.length){
+    const px={};rows.forEach(r=>px[r.symbol]=+r.price);
+    if(cfg.src==="fmp"&&cfg.key){const miss=[...new Set(pend.map(x=>x.s))].filter(s=>!px[s]).slice(0,40);
+      if(miss.length)try{const q=await jget("https://financialmodelingprep.com/stable/batch-quote?symbols="+miss.join(",")+"&apikey="+encodeURIComponent(cfg.key));Array.isArray(q)&&q.forEach(x=>px[x.symbol]=+x.price)}catch(e){}}
+    pend.forEach(x=>{const p=px[x.s];if(!p)return;
+      if(!x.h&&now-x.t>=36e5)x.h=now-x.t<72e5?p:-1;
+      if(!x.d&&now-x.t>=864e5)x.d=now-x.t<1296e5?p:-1});
+    LS.set("hr-sig",sig);
+  }
+  renderSig();
+}
+function renderSig(){
+  if(!sig.length)return;
+  const pc=(x,v)=>v>0?(v/x.p-1)*100:null,f=v=>v==null?'<span class="meta">-</span>':`<span class="${v>=0?"up":"dn"}">${v>=0?"+":""}${v.toFixed(2)}%</span>`;
+  const hs=sig.map(x=>pc(x,x.h)).filter(v=>v!=null),ds=sig.map(x=>pc(x,x.d)).filter(v=>v!=null);
+  const sm=(a,n)=>a.length?`${n}: orta ${(a.reduce((x,y)=>x+y,0)/a.length).toFixed(2)}%, müsbət ${a.filter(v=>v>0).length}/${a.length}`:"";
+  $("#sig").innerHTML='<table><thead><tr><th>Hissə</th><th class="n">Alert qiyməti</th><th class="n">+1 saat</th><th class="n">+1 gün</th><th class="n">Vaxt</th></tr></thead><tbody>'+
+    sig.slice(-30).reverse().map(x=>`<tr><td class="sym">${esc(x.s)}</td><td class="n">$${x.p.toFixed(2)}</td><td class="n">${f(pc(x,x.h))}</td><td class="n">${f(pc(x,x.d))}</td><td class="n">${ago(x.t)}</td></tr>`).join("")+
+    `</tbody></table><div class="hint" style="padding:10px 14px">${[sm(hs,"1 saat"),sm(ds,"1 gün")].filter(Boolean).join(" · ")||"Nəticələr 1 saatdan sonra görünəcək."}</div>`;
+}
+const UNI="NVDA TSLA AMD PLTR SMCI COIN MARA RIOT SOFI HOOD RIVN LCID AFRM UPST IONQ RKLB SOUN CVNA MSTR RGTI AAPL MSFT AMZN GOOGL META NFLX AVGO INTC MU QCOM ARM SNOW CRWD NET DDOG SHOP PYPL UBER ABNB DKNG RBLX U ROKU PINS SNAP LYFT NIO XPEV LI F GM BA LMT CCL AAL UAL DAL NCLH OXY XOM CVX FCX AA NEM HIVE CLSK BITF CIFR WULF IREN APLD OKLO SMR NNE JOBY ACHR LUNR ASTS".split(" ");
+let fhMap={},fhCur=0,gainC=LS.get("hr-gc",{t:0,list:[]});
+/* Finnhub: siyahı üzrə qiymət (hər yenilənmədə 50 sorğu, limit 60/dəq); Alpha Vantage: gündə ≤8 dəfə gainers */
+async function bothFetch(){
+  const now=Date.now();
+  if(cfg.key&&now-gainC.t>108e5){try{const j=await jget("https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey="+encodeURIComponent(cfg.key));
+    if(j&&j.top_gainers){gainC={t:now,list:j.top_gainers.map(x=>({symbol:x.ticker,price:+x.price,pct:parseFloat(x.change_percentage),vol:+x.volume}))};LS.set("hr-gc",gainC)}}catch(e){}}
+  const syms=[...new Set([...cfg.watch,...gainC.list.map(x=>x.symbol),...UNI])],batch=[];
+  for(let i=0;i<50&&i<syms.length;i++)batch.push(syms[(fhCur+i)%syms.length]);fhCur=(fhCur+50)%syms.length;
+  await Promise.all(batch.map(async s=>{try{const q=await jget("https://finnhub.io/api/v1/quote?symbol="+encodeURIComponent(s)+"&token="+encodeURIComponent(cfg.fhk));
+    if(q&&q.c>0&&q.dp!=null)fhMap[s]={symbol:s,name:"",price:+q.c,pct:+q.dp,t:now}}catch(e){}}));
+  if(!Object.keys(fhMap).length)throw new Error("Finnhub cavab vermədi, açarı yoxlayın");
+  const gm=Object.fromEntries(gainC.list.map(x=>[x.symbol,x])),out=Object.values(fhMap).filter(x=>now-x.t<18e5).map(x=>({...gm[x.symbol],...x}));
+  gainC.list.forEach(g=>{if(!fhMap[g.symbol])out.push({...g,name:""})});
+  return out;
+}
+/* ---- Real data ---- */
+async function jget(u){
+  let r;try{r=await fetch(u)}catch(e){throw new Error("Şəbəkə xətası: mənbəyə qoşulmaq olmadı")}
+  let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok&&!j)throw new Error("Mənbə xətası (HTTP "+r.status+")");
+  return j;
+}
+async function realFetch(){
+  if(!cfg.key)throw new Error("API açarını daxil edin");
+  const k=encodeURIComponent(cfg.key);
+  if(cfg.src==="av"){
+    const j=await jget("https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey="+k);
+    if(!j.top_gainers)throw new Error(j.Note||j.Information||j["Error Message"]||"Alpha Vantage cavab vermədi");
+    return j.top_gainers.map(x=>({symbol:x.ticker,name:"",price:+x.price,pct:parseFloat(x.change_percentage),vol:+x.volume}));
+  }
+  const j=await jget("https://financialmodelingprep.com/stable/biggest-gainers?apikey="+k);
+  if(!Array.isArray(j))throw new Error(j["Error Message"]||"FMP cavab vermədi");
+  return j.map(x=>({symbol:x.symbol,name:x.name||"",price:+x.price,pct:+(x.changesPercentage??x.changePercentage)}));
+}
+
+function score(r){
+  const extra=r.vr?Math.log(1+r.vr)*2:(r.vol?Math.max(0,Math.log10(r.vol)-5)*2:0);
+  return Math.max(0,r.pct+extra);
+}
+
+/* ---- Load & render ---- */
+async function load(){
+  if(busy)return;
+  if(cfg.src==="both"?!cfg.fhk:!cfg.key){rows=[];render();$("#status").textContent="API açarını daxil edin (Ayarlar bölməsi)";return}
+  busy=true;$("#refresh").disabled=true;
+  try{
+    const list=cfg.src==="both"?await bothFetch():await enrich(await realFetch());
+    const now=Date.now(),firstRun=!Object.keys(seen).length;
+    rows=list.filter(r=>r.symbol&&isFinite(r.pct)).map(r=>{
+      if(!seen[r.symbol])seen[r.symbol]=now;
+      return {...r,first:seen[r.symbol],score:score(r),isNew:!firstRun&&now-seen[r.symbol]<15*60e3};
+    });
+    for(const s in seen)if(now-seen[s]>864e5&&!rows.some(r=>r.symbol===s))delete seen[s];
+    LS.set("hr-seen",seen);
+    const cur=new Set(rows.map(r=>r.symbol));
+    for(const s in hist)if(!cur.has(s))delete hist[s];
+    rows.forEach(r=>{const h=hist[r.symbol]=hist[r.symbol]||[];h.push(+r.price);if(h.length>40)h.shift()});
+    LS.set("hr-hist",hist);mkt();
+    $("#status").textContent="Son yenilənmə: "+new Date().toLocaleTimeString("az")+" ("+rows.length+" hissə)";
+    render();
+    if(!curSym&&rows.length)openNews(sorted()[0].symbol);
+    if(cfg.auto)await alertNew();
+    await track();
+  }catch(e){
+    $("#status").textContent="Xəta: "+e.message;toast("Xəta: "+e.message);
+  }
+  busy=false;$("#refresh").disabled=false;
+}
+function sorted(){
+  const a=rows.filter(visible);
+  if(cfg.sort==="new")a.sort((x,y)=>y.first-x.first||y.score-x.score);
+  else if(cfg.sort==="pct")a.sort((x,y)=>y.pct-x.pct);
+  else a.sort((x,y)=>y.score-x.score);
+  return a;
+}
+function ago(t){const m=Math.round((Date.now()-t)/6e4);return m<1?"indi":m<60?m+" dəq əvvəl":Math.round(m/60)+" saat əvvəl"}
+function render(){
+  const a=sorted(),max=Math.max(1,...a.map(r=>r.score));
+  $("#rows").innerHTML=a.length?a.map(r=>`<tr data-s="${esc(r.symbol)}" class="${r.symbol===curSym?"sel":""}">
+   <td><span class="star" data-w="${esc(r.symbol)}" title="İzləmə siyahısı">${cfg.watch.includes(r.symbol)?"★":"☆"}</span><span class="sym">${esc(r.symbol)}</span>${r.isNew?'<span class="new">yeni</span>':""}<span class="nm">${esc(r.name)}${r.vr?" · həcm ×"+r.vr.toFixed(1):""}</span></td>
+   <td class="n">$${(+r.price).toFixed(2)}</td>
+   <td class="n ${r.pct>=0?"up":"dn"}">${r.pct>=0?"+":""}${r.pct.toFixed(2)}%</td>
+   <td><span class="meter" title="${r.score.toFixed(1)}"><i style="width:${Math.round(r.score/max*100)}%"></i></span> ${r.score.toFixed(1)}</td>
+   <td>${spark(r.symbol)}</td>
+   <td class="n">${ago(r.first)}</td></tr>`).join(""):'<tr><td colspan="6" class="empty">Məlumat yoxdur. Yenilə düyməsinə basın.</td></tr>';
+}
+
+/* ---- Telegram ---- */
+async function sendTG(text){
+  if(!cfg.tg||!cfg.chat){toast("Telegram token və chat ID daxil edin");return false}
+  try{
+    const r=await fetch("https://api.telegram.org/bot"+encodeURIComponent(cfg.tg)+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:cfg.chat,text})});
+    const j=await r.json();
+    if(!j.ok){toast("Telegram xətası: "+(j.description||r.status));return false}
+    return true;
+  }catch(e){toast("Telegram-a qoşulmaq olmadı: "+e.message);return false}
+}
+function fmtLines(a){return a.map(r=>`${r.isNew?"🆕":"🔥"} ${r.symbol}  $${(+r.price).toFixed(2)}  ${r.pct>=0?"+":""}${r.pct.toFixed(2)}%  (bal ${r.score.toFixed(1)})`).join("\n")}
+async function alertNew(){
+  const tgOn=!!(cfg.tg&&cfg.chat);
+  if(!tgOn&&!cfg.ntf)return;
+  if(cfg.mo&&!mOpen)return;
+  const day=new Date().toISOString().slice(0,10);
+  for(const k in sent)if(!k.startsWith(day))delete sent[k];
+  const lim=r=>cfg.watch.includes(r.symbol)?cfg.thr/2:cfg.thr;
+  const hits=rows.filter(r=>r.pct>=lim(r)&&!sent[day+r.symbol]&&(cfg.watch.includes(r.symbol)||(r.price>=cfg.minp&&!(cfg.clean&&junk(r))))&&(!cfg.minvr||(r.vr||0)>=cfg.minvr)).sort((a,b)=>b.score-a.score).slice(0,8);
+  if(!hits.length)return;
+  let txt="🚀 Hissə Radar: yüksələnlər\n\n"+fmtLines(hits);
+  if(cfg.nws&&tgOn){
+    const ex=[];
+    for(const r of hits.slice(0,2)){try{const n=(await newsFetch(r.symbol))[0];if(n)ex.push("📰 "+r.symbol+": "+n.title)}catch(e){}}
+    if(ex.length)txt+="\n\n"+ex.join("\n");
+  }
+  txt+="\n\n"+new Date().toLocaleTimeString("az");
+  if(cfg.ntf&&window.Notification&&Notification.permission==="granted"){try{new Notification("Hissə Radar",{body:hits.map(r=>r.symbol+" +"+r.pct.toFixed(1)+"%").join(", ")})}catch(e){}}
+  const ok=tgOn?await sendTG(txt):true;
+  if(ok){hits.forEach(r=>{sent[day+r.symbol]=1;sig.push({s:r.symbol,p:+r.price,t:Date.now()})});sig=sig.slice(-200);LS.set("hr-sig",sig);LS.set("hr-sent",sent);toast("Xəbərdarlıq göndərildi")}
+}
+
+/* ---- News ---- */
+let curSym="",newsItems=[],newsCache={};
+const SENT={"Bullish":["Müsbət","p"],"Somewhat-Bullish":["Bir qədər müsbət","p"],"Neutral":["Neytral",""],"Somewhat-Bearish":["Bir qədər mənfi","m"],"Bearish":["Mənfi","m"]};
+const safeUrl=u=>/^https?:\/\//i.test(u||"")?u:"#";
+async function newsFetch(sym){
+  if(cfg.src==="both"){
+    if(!cfg.fhk)throw new Error("Finnhub açarını daxil edin");
+    const d=new Date(),f=new Date(d-6048e5),y=x=>x.toISOString().slice(0,10);
+    const j=await jget(`https://finnhub.io/api/v1/company-news?symbol=${encodeURIComponent(sym)}&from=${y(f)}&to=${y(d)}&token=${encodeURIComponent(cfg.fhk)}`);
+    if(!Array.isArray(j))throw new Error("Finnhub xəbərləri alınmadı");
+    return j.slice(0,10).map(x=>({title:x.headline,src:x.source,url:x.url,time:x.datetime*1e3}));
+  }
+  if(!cfg.key)throw new Error("API açarını daxil edin");
+  const k=encodeURIComponent(cfg.key),s=encodeURIComponent(sym);
+  if(cfg.src==="av"){
+    const j=await jget(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${s}&sort=LATEST&limit=10&apikey=${k}`);
+    if(!j.feed)throw new Error(j.Note||j.Information||j["Error Message"]||"Xəbər tapılmadı");
+    return j.feed.map(x=>{const p=x.time_published||"";return {title:x.title,src:x.source,url:x.url,sent:x.overall_sentiment_label,
+      time:Date.UTC(+p.slice(0,4),+p.slice(4,6)-1,+p.slice(6,8),+p.slice(9,11),+p.slice(11,13))}});
+  }
+  const j=await jget(`https://financialmodelingprep.com/stable/news/stock?symbols=${s}&limit=10&apikey=${k}`);
+  if(!Array.isArray(j))throw new Error("FMP xəbərləri bu plan üçün əlçatan deyil. Alpha Vantage mənbəyini yoxlayın");
+  return j.map(x=>({title:x.title,src:x.site||x.publisher||"",url:x.url,time:Date.parse(x.publishedDate)}));
+}
+async function openNews(sym){
+  curSym=sym;$("#newsTitle").textContent=sym+" üzrə xəbərlər";
+  document.querySelectorAll("#rows tr").forEach(tr=>tr.classList.toggle("sel",tr.dataset.s===sym));
+  const c=newsCache[cfg.src+sym];
+  if(c&&Date.now()-c.t<3e5){newsItems=c.items;return renderNews()}
+  $("#news").innerHTML='<div class="empty">Yüklənir...</div>';
+  try{
+    newsItems=await newsFetch(sym);newsCache[cfg.src+sym]={t:Date.now(),items:newsItems};
+    if(sym===curSym)renderNews();
+  }catch(e){if(sym===curSym)$("#news").innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+function renderNews(){
+  $("#news").innerHTML=newsItems.length?newsItems.map((n,i)=>{
+    const s=SENT[n.sent];
+    return `<div class="item"><div><a href="${esc(safeUrl(n.url))}" target="_blank" rel="noopener">${esc(n.title)}</a>
+    <div class="meta">${s?`<span class="tag ${s[1]}">${s[0]}</span>`:""}${esc(n.src)} ${n.time?"- "+ago(n.time):""}</div></div>
+    <button class="g" data-i="${i}">Telegrama</button></div>`}).join(""):'<div class="empty">Bu hissə üzrə xəbər tapılmadı.</div>';
+}
+$("#rows").onclick=e=>{
+  const st=e.target.closest(".star");
+  if(st){const s=st.dataset.w,i=cfg.watch.indexOf(s);i<0?cfg.watch.push(s):cfg.watch.splice(i,1);saveCfg();return render()}
+  const tr=e.target.closest("tr[data-s]");if(tr)openNews(tr.dataset.s);
+};
+$("#news").onclick=async e=>{
+  const b=e.target.closest("button[data-i]");if(!b)return;
+  const n=newsItems[+b.dataset.i];
+  const r=rows.find(x=>x.symbol===curSym);
+  if(await sendTG(`📰 ${curSym}${r?`  ${r.pct>=0?"+":""}${r.pct.toFixed(2)}%`:""}\n${n.title}\n${safeUrl(n.url)==="#"?"":n.url}`))toast("Xəbər Telegrama göndərildi");
+};
+
+/* ---- Controls ---- */
+function schedule(){
+  clearInterval(timer);
+  $("#auto").textContent="Avto: "+(cfg.auto?"aktiv":"dayandırılıb");
+  if(cfg.auto)timer=setInterval(load,Math.max(cfg.src==="both"?60:15,cfg.sec)*1000);
+}
+["src","fhk","key","tg","chat","thr","sec"].forEach(id=>{
+  const el=$("#"+id);el.value=cfg[id];
+  el.onchange=()=>{cfg[id]=["thr","sec"].includes(id)?(+el.value||cfg[id]):el.value.trim();saveCfg();if(id==="src"||id==="key"||id==="fhk")load();if(id==="sec"||id==="src")schedule()};
+});
+$("#sort").value=cfg.sort;$("#sort").onchange=e=>{cfg.sort=e.target.value;saveCfg();render()};
+$("#refresh").onclick=load;
+$("#auto").onclick=()=>{cfg.auto=!cfg.auto;saveCfg();schedule()};
+$("#test").onclick=async()=>{if(await sendTG("✅ Hissə Radar bağlantısı işləyir"))toast("Test mesajı göndərildi")};
+$("#sendTop").onclick=async()=>{
+  if(!rows.length)return toast("Əvvəlcə məlumatı yeniləyin");
+  if(await sendTG("📈 Top 5 hissə\n\n"+fmtLines(sorted().slice(0,5))))toast("Top 5 göndərildi");
+};
+function visible(r){
+  const w=cfg.watch.includes(r.symbol),q=cfg.q.toUpperCase();
+  if(cfg.wonly&&!w)return false;
+  if(!w&&r.price<cfg.minp)return false;
+  if(!w&&cfg.clean&&junk(r))return false;
+  return !q||r.symbol.toUpperCase().includes(q)||(r.name||"").toUpperCase().includes(q);
+}
+function spark(sym){
+  const h=hist[sym]||[];if(h.length<2)return '<span class="meta">-</span>';
+  const lo=Math.min(...h),hi=Math.max(...h),d=hi-lo||1;
+  const pts=h.map((v,i)=>(i/(h.length-1)*78+1).toFixed(1)+","+(22-(v-lo)/d*20).toFixed(1)).join(" ");
+  return `<svg class="sp" width="80" height="24" viewBox="0 0 80 24" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${h[h.length-1]>=h[0]?"#3be08a":"#ff6b6b"}" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+function mkt(){
+  const p=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",hour:"numeric",minute:"numeric",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  const m=+p.hour*60+ +p.minute,open=!["Sat","Sun"].includes(p.weekday)&&m>=570&&m<960;
+  mOpen=open;
+  $("#mkt").innerHTML=`<span class="tag ${open?"p":"m"}">ABŞ bazarı ${open?"açıq":"bağlı"}</span>`;
+}
+$("#minp").value=cfg.minp;$("#minp").onchange=e=>{cfg.minp=Math.max(0,+e.target.value||0);saveCfg();render()};
+$("#q").value=cfg.q;$("#q").oninput=e=>{cfg.q=e.target.value.trim();saveCfg();render()};
+$("#wonly").checked=cfg.wonly;$("#wonly").onchange=e=>{cfg.wonly=e.target.checked;saveCfg();render()};
+$("#clean").checked=cfg.clean;$("#clean").onchange=e=>{cfg.clean=e.target.checked;saveCfg();render()};
+$("#mo").checked=cfg.mo;$("#mo").onchange=e=>{cfg.mo=e.target.checked;saveCfg()};
+$("#minvr").value=cfg.minvr;$("#minvr").onchange=e=>{cfg.minvr=Math.max(0,+e.target.value||0);saveCfg()};
+$("#nws").checked=cfg.nws;$("#nws").onchange=e=>{cfg.nws=e.target.checked;saveCfg()};
+$("#ntf").checked=cfg.ntf;
+$("#ntf").onchange=async e=>{
+  if(e.target.checked){
+    if(!window.Notification){e.target.checked=false;return toast("Brauzer bildirişləri dəstəkləmir")}
+    if(await Notification.requestPermission()!=="granted"){e.target.checked=false;return toast("Bildiriş icazəsi verilmədi")}
+  }
+  cfg.ntf=e.target.checked;saveCfg();
+};
+$("#csv").onclick=()=>{
+  const a=sorted();if(!a.length)return toast("Məlumat yoxdur");
+  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const csv="\ufeff"+["Hissə,Ad,Qiymət,Artım %,Bal"].concat(a.map(r=>[r.symbol,r.name,(+r.price).toFixed(2),r.pct.toFixed(2),r.score.toFixed(1)].map(q).join(","))).join("\n");
+  const u=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})),l=document.createElement("a");
+  l.href=u;l.download="hisse-radar.csv";l.click();URL.revokeObjectURL(u);
+};
+mkt();setInterval(mkt,6e4);
+renderSig();schedule();load();
+</script>
+</body>
+</html>
